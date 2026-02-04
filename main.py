@@ -326,3 +326,10 @@ async def read_item(request: Request):
     return templates.TemplateResponse(
         request=request, name="index.html"
     )
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="about.html"
+    )
