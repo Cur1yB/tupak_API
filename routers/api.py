@@ -1,106 +1,13 @@
-from typing import Dict, Optional, List
-from fastapi import FastAPI, HTTPException, Request, status, Path, Body
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel, EmailStr, Field
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 
-templates = Jinja2Templates(directory="templates")
+from typing import List
+from fastapi import Body, HTTPException, Path, APIRouter, status
+from schemas import ErrorResponse, User, UserCreate, UserUpdate
+from database import users
+import database
 
-app = FastAPI(
-    title="Users CRUD example",
-    summary="Пример CRUD-сервиса пользователей на FastAPI",
-    description="""
-API демонстрирует базовые CRUD-операции над пользователями с in-memory хранилищем.
+router = APIRouter()
 
-**Особенности:**
-- Валидация входных данных через Pydantic
-- Уникальность `email`
-- Подробные описания эндпоинтов/моделей для Swagger UI и ReDoc
-""",
-    version="1.0.0",
-    contact={
-        "name": "API Support",
-        "url": "https://example.com/support",
-        "email": "support@example.com",
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://opensource.org/licenses/MIT",
-    },
-    openapi_tags=[
-        {
-            "name": "users",
-            "description": "Операции создания, получения, обновления и удаления пользователей.",
-        }
-    ],
-)
-
-app.mount('/static', StaticFiles(directory='static'), name='static')
-
-# ---- Schemas ----
-class UserCreate(BaseModel):
-    """Модель для создания пользователя."""
-    name: str = Field(
-        ...,
-        min_length=1,
-        max_length=100,
-        examples=["Иван Петров"],
-        description="Отображаемое имя пользователя.",
-    )
-    email: EmailStr = Field(
-        ...,
-        examples=["ivan.petrov@example.com"],
-        description="Email пользователя. Должен быть уникальным.",
-    )
-
-class UserUpdate(BaseModel):
-    """Модель для частичного обновления пользователя (необязательные поля)."""
-    name: Optional[str] = Field(
-        default=None,
-        min_length=1,
-        max_length=100,
-        examples=["Иван Петров"],
-        description="Новое имя пользователя (если нужно обновить).",
-    )
-    email: Optional[EmailStr] = Field(
-        default=None,
-        examples=["new.email@example.com"],
-        description="Новый email пользователя (если нужно обновить). Должен быть уникальным.",
-    )
-
-class User(BaseModel):
-    """Модель пользователя (то, что возвращает API)."""
-    id: int = Field(
-        ...,
-        ge=1,
-        examples=[1],
-        description="Уникальный идентификатор пользователя.",
-    )
-    name: str = Field(
-        ...,
-        examples=["Иван Петров"],
-        description="Имя пользователя.",
-    )
-    email: EmailStr = Field(
-        ...,
-        examples=["ivan.petrov@example.com"],
-        description="Email пользователя.",
-    )
-
-class ErrorResponse(BaseModel):
-    """Единый формат ошибки для документации (пример)."""
-    detail: str = Field(..., examples=["User not found"])
-
-
-# ---- In-memory "DB" ----
-users: Dict[int, User] = {}
-next_id = 1
-
-
-# ---- CRUD Endpoints ----
-
-@app.post(
+@router.post(
     "/users",
     response_model=User,
     status_code=status.HTTP_201_CREATED,
@@ -143,18 +50,16 @@ def create_user(
     )
 ):
     """Создание пользователя (in-memory)."""
-    global next_id
-
     if any(u.email == payload.email for u in users.values()):
         raise HTTPException(status_code=400, detail="Email already exists")
 
-    user = User(id=next_id, name=payload.name, email=payload.email)
-    users[next_id] = user
-    next_id += 1
+    user = User(id=database.next_id, name=payload.name, email=payload.email)
+    users[database.next_id] = user
+    database.next_id += 1
     return user
 
 
-@app.get(
+@router.get(
     "/users",
     response_model=List[User],
     tags=["users"],
@@ -183,7 +88,7 @@ def list_users():
     return list(users.values())
 
 
-@app.get(
+@router.get(
     "/users/{user_id}",
     response_model=User,
     tags=["users"],
@@ -224,7 +129,7 @@ def get_user(
     return user
 
 
-@app.put(
+@router.put(
     "/users/{user_id}",
     response_model=User,
     tags=["users"],
@@ -290,7 +195,7 @@ def update_user(
     return updated
 
 
-@app.delete(
+@router.delete(
     "/users/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     tags=["users"],
@@ -318,18 +223,3 @@ def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     del users[user_id]
     return None
-
-# ---- Template Routers ----
-
-@app.get("/", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="index.html"
-    )
-
-
-@app.get("/about", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="about.html"
-    )

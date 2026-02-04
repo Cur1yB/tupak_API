@@ -1,8 +1,8 @@
 # test_main.py
 import pytest
 from fastapi.testclient import TestClient
-
-import main  # main.py where app/users/next_id are defined
+from .. import database
+import app
 
 
 @pytest.fixture()
@@ -10,7 +10,7 @@ def client():
     """
     Fresh TestClient per test.
     """
-    return TestClient(main.app)
+    return TestClient(app.app)
 
 
 @pytest.fixture(autouse=True)
@@ -18,11 +18,11 @@ def reset_inmemory_db():
     """
     Reset in-memory storage before each test so tests are independent.
     """
-    main.users.clear()
-    main.next_id = 1
+    database.users.clear()
+    database.next_id = 1
     yield
-    main.users.clear()
-    main.next_id = 1
+    database.users.clear()
+    database.next_id = 1
 
 
 @pytest.fixture()
