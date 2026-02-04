@@ -1,0 +1,103 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f4f4f9;
+}
+
+header, nav, main, footer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px 20px;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background-color: #444;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+}
+
+nav a:hover {
+  color: #ffd700;
+}
+
+h1 {
+  font-size: 2rem;
+  color: #444;
+  text-align: center;
+  margin-top: 20px;
+}
+
+p, ul {
+  font-size: 1rem;
+  margin: 15px 0;
+}
+
+ul li {
+  margin-bottom: 10px;
+}
+
+ul, ol {
+  padding-left: 20px;
+}
+
+/* Блок кода */
+code {
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.95rem;
+}
+
+/* Блоки с серым фоном */
+.section {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+  text-align: center;
+  padding: 10px 20px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.btn {
+  display: inline-block;
+  background-color: #444;
+  color: #fff;
+  padding: 8px 12px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.btn:hover {
+  background-color: #ffd700;
+}
+
+.warn {
+  background-color: #ffefef;
+  color: #a00;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #d77;
+  border-radius: 5px;
+}

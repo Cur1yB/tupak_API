@@ -1,7 +1,11 @@
 from typing import Dict, Optional, List
-
-from fastapi import FastAPI, HTTPException, status, Path, Body
+from fastapi import FastAPI, HTTPException, Request, status, Path, Body
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, EmailStr, Field
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
+templates = Jinja2Templates(directory="templates")
 
 app = FastAPI(
     title="Users CRUD example",
@@ -31,6 +35,8 @@ API демонстрирует базовые CRUD-операции над по�
         }
     ],
 )
+
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 # ---- Schemas ----
 class UserCreate(BaseModel):
@@ -312,3 +318,11 @@ def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     del users[user_id]
     return None
+
+# ---- Template Routers ----
+
+@app.get("/", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse(
+        request=request, name="index.html"
+    )
